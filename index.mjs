@@ -30,10 +30,12 @@ const plugin = ({ React, ui, icons, store, sdk }) => {
     const res = await fetch(url);
     return new Uint8Array(await res.arrayBuffer());
   };
-  const buildConfig = (pluginSpecs) => {
-    const entries = pluginSpecs.map((p) => ({
-      pluginUri: `./${p.dirName}`
-    }));
+  const buildConfig = (pluginSpecs, staticFileNames) => {
+    const entries = pluginSpecs.map((p, i) => {
+      const entry = { pluginUri: `./${p.dirName}` };
+      if (i === 0 && staticFileNames.length > 0) entry.importData = staticFileNames;
+      return entry;
+    });
     return JSON.stringify(entries, null, 2);
   };
   const specToDir = (spec) => {
@@ -116,7 +118,7 @@ const plugin = ({ React, ui, icons, store, sdk }) => {
     zipFiles[`assets/${jsFile}`] = jsData;
     zipFiles[`assets/${cssFile}`] = cssData;
     zipFiles["favicon.ico"] = "";
-    zipFiles["config.json"] = buildConfig(pluginFiles);
+    zipFiles["config.json"] = buildConfig(pluginFiles, Object.keys(staticFiles));
     for (const [name, data] of Object.entries(staticFiles)) {
       zipFiles[name] = data;
     }
